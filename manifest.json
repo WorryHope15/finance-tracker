@@ -1,0 +1,6 @@
+{
+"name":"Финансовый трекер 5/20","short_name":"Финансы","start_url":"./","display":"standalone",
+"background_color":"#f6efeb","theme_color":"#c98286",
+"description":"Личный финансовый трекер с циклом выплат 5 и 20 числа.",
+"icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png"}]
+}
