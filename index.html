@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ФинТрекер Pro</title>
+<style>
+:root {
+  --bg: #0b1220; --panel: #131c2e; --panel2: #0f1727; --line: #243149;
+  --txt: #e6edf7; --muted: #8b9bb4; --accent: #4f8cff; --green: #2ecc8f;
+  --red: #ff6b6b; --amber: #ffb454; --radius: 12px;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--txt); padding: 16px; line-height: 1.5; font-size: 16px; }
+h1 { font-size: 22px; margin: 0 0 6px; font-weight: 700; }
+.sub { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+.wrap { max-width: 600px; margin: 0 auto; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+.card h2 { font-size: 15px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 4px; }
+input, select { width: 100%; padding: 12px; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; color: var(--txt); font-size: 16px; -webkit-appearance: none; appearance: none; }
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+button { width: 100%; cursor: pointer; border: none; border-radius: 8px; padding: 14px; font-size: 16px; font-weight: 600; background: var(--accent); color: #fff; margin-top: 12px; }
+button.ghost { background: transparent; border: 1px solid var(--line); color: var(--muted); padding: 10px; font-size: 14px; }
+button.danger { background: transparent; border: 1px solid var(--line); color: var(--red); padding: 6px 10px; font-size: 13px; width: auto; }
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; text-align: center; }
+.kpi .l { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+.kpi .v { font-size: 18px; font-weight: 700; margin-top: 4px; }
+.debt-item { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; transition: all 0.3s; }
+.debt-item.paid-all { opacity: 0.6; border-color: var(--green); }
+.debt-item .h { display: flex; justify-content: space-between; font-size: 15px; font-weight: 600; gap: 6px; flex-wrap: wrap; }
+.debt-item .s { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.debt-item .b { height: 6px; background: var(--panel); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.debt-item .b i { display: block; height: 100%; background: linear-gradient(90deg, var(--red), var(--amber)); transition: width 0.4s ease; }
+.planner { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.planner .row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+.planner .row.total { font-weight: 700; font-size: 16px; border-top: 1px solid var(--line); padding-top: 10px; margin-top: 10px; }
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.pill { padding: 8px 14px; border: 1px solid var(--line); border-radius: 20px; font-size: 13px; cursor: pointer; background: var(--panel2); color: var(--muted); }
+.pill.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.op { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.op:last-child { border-bottom: none; }
+.op.locked { opacity: 0.5; }
+.check { width: 26px; height: 26px; accent-color: var(--green); flex-shrink: 0; }
+.op .info { flex: 1; min-width: 0; }
+.op .d { font-size: 15px; font-weight: 600; word-break: break-word; }
+.op .m { font-size: 12px; color: var(--muted); }
+.op .a { font-size: 15px; font-weight: 700; white-space: nowrap; }
+.done { text-decoration: line-through; color: var(--muted); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+.t-open { background: rgba(255, 180, 84, 0.15); color: var(--amber); }
+.t-lock { background: rgba(139, 155, 180, 0.15); color: var(--muted); }
+.empty { color: var(--muted); font-size: 14px; text-align: center; padding: 16px 0; }
+.note { color: var(--amber); font-size: 12px; margin-top: 8px; min-height: 16px; }
+.cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 12px; }
+.cal div { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 12px; }
+.cal b { font-size: 13px; display: block; margin-bottom: 4px; }
+@media(max-width: 360px) { .kpis { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>💰 ФинТрекер Pro</h1>
+  <div class="sub">Галочка «Оплачено» сразу уменьшает долг</div>
+
+  <!-- Бюджет -->
+  <div class="card"><h2>📅 Бюджет месяца</h2><div id="planner" class="planner"></div></div>
+
+  <!-- KPI -->
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="l">Доходы</div><div class="v" style="color:var(--green)">0 ₽</div></div>
+    <div class="kpi"><div class="l">Расходы</div><div class="v" style="color:var(--red)">0 ₽</div></div>
+    <div class="kpi"><div class="l">Долги</div><div class="v" style="color:var(--amber)">0 ₽</div></div>
+    <div class="kpi"><div class="l">Остаток</div><div class="v">0 ₽</div></div>
+  </div>
+
+  <!-- Форма -->
+  <div class="card">
+    <h2>Новая запись</h2>
+    <form id="form">
+      <label>Период</label><select id="period"></select>
+      <label>Описание</label><input id="desc" placeholder="Напр. Платёж Сбер" required>
+      <label>Категория / долг</label><select id="cat"></select>
+      <label>Тип</label>
+      <select id="type">
+        <option value="payment">Погашение долга</option>
+        <option value="income">Доход</option>
+        <option value="expense">Расход</option>
+      </select>
+      <label>Сумма</label><input id="amount" type="number" step="0.01" min="0.01" placeholder="0.00" required>
+      <button type="submit">Добавить</button>
+    </form>
+    <div id="note" class="note"></div>
+  </div>
+
+  <!-- Календарь -->
+  <div class="card">
+    <h2>Периоды</h2>
+    <div id="calendar" class="cal"></div>
+  </div>
+
+  <!-- Сводка по долгам -->
+  <div class="card">
+    <h2>Состояние кредитов</h2>
+    <div id="debts"></div>
+  </div>
+
+  <!-- История -->
+  <div class="card">
+    <h2>История операций</h2>
+    <div class="pills" id="pills"></div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script>
+const KEY = 'fintracker_final';
+
+const START_DEBTS = [
+  {n:'Сбер кредит', r:280474, p:9002.61, d:27},
+  {n:'Сбер кредитка', r:123219, p:6206.83, d:31},
+  {n:'Яндекс Пэй', r:99783, p:6903, d:3},
+  {n:'Тинькофф кредитка', r:92959, p:7300, d:7},
+  {n:'Райффайзен', r:20538, p:2213.82, d:17},
+  {n:'Яндекс Сплит', r:10000, p:786, d:27},
+  {n:'Кубышка', r:11280, p:null, d:null, note:'разово'},
+  {n:'WB', r:0, p:null, d:null, note:'2 платежа', userAmount:true}
+];
+
+const START_INCOME = [
+  {name:'Зарплата (5-е)', amount:41300, day:5},
+  {name:'Зарплата (20-е)', amount:37699.33, day:20}
+];
+
+const START_EXPENSES = [
+  {name:'Интернет', amount:300},
+  {name:'Мобильная связь', amount:300},
+  {name:'Кв. плата', amount:7000},
+  {name:'Проезд (200*20)', amount:4000},
+  {name:'Кот', amount:2000},
+  {name:'Еда', amount:6000}
+];
+
+function seed() {
+  const now = new Date();
+  const periods = [];
+  for (let i = -2; i <= 1; i++) {
+    const dt = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+    periods.push({ key, label: dt.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }), closed: false, locked: i < 0 });
+  }
+  periods.sort((a, b) => a.key.localeCompare(b.key));
+  
+  const debts = START_DEBTS.map(d => ({ ...d, paid: 0, userAmount: d.userAmount || false }));
+  const items = [];
+  const currentKey = periods[periods.length - 1].key;
+  
+  START_INCOME.forEach(i => items.push({ id: Date.now() + Math.random(), period: currentKey, desc: i.name, creditType: '', type: 'income', amount: i.amount, done: false }));
+  START_EXPENSES.forEach(i => items.push({ id: Date.now() + Math.random() + 1, period: currentKey, desc: i.name, creditType: '', type: 'expense', amount: i.amount, done: false }));
+  
+  return { periods, debts, items };
+}
+
+let db = JSON.parse(localStorage.getItem(KEY) || 'null');
+if (!db || !db.debts) { db = seed(); save(); }
+
+function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+function fmt(n) { return n.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₽'; }
+function fmt0(n) { return Math.round(n).toLocaleString('ru-RU') + ' ₽'; }
+
+function renderSelectors() {
+  document.getElementById('period').innerHTML = db.periods.map(p => `<option value="${p.key}">${p.label}${p.closed ? ' 🔒' : ''}</option>`).join('');
+  
+  let options = '<option value="">Без долга</option>';
+  db.debts.forEach(d => {
+    if (d.userAmount) options += `<option value="WB_User">WB (Ввод суммы)</option>`;
+    else options += `<option>${d.n}</option>`;
+  });
+  options += '<option value="Расходы">Общие расходы</option>';
+  options += '<option value="Доходы">Доходы</option>';
+  document.getElementById('cat').innerHTML = options;
+
+  document.getElementById('pills').innerHTML =
+    `<div class="pill ${filter === 'all' ? 'on' : ''}" data-f="all">Все</div>` +
+    db.periods.map(p => `<div class="pill ${filter === p.key ? 'on' : ''}" data-f="${p.key}">${p.label}</div>`).join('');
+  document.querySelectorAll('.pill').forEach(el => el.onclick = () => { filter = el.dataset.f; render(); });
+}
+
+function renderDebts() {
+  let totalLeft = 0, monthly = 0;
+  const html = db.debts.map(d => {
+    let left = d.r - (d.paid || 0);
+    if (d.userAmount) left = Math.max(0, (d.r || 0) - (d.paid || 0));
+    totalLeft += left;
+    if (d.p) monthly += d.p;
+    
+    const pct = d.r ? Math.min(100, Math.round((d.paid || 0) / d.r * 100)) : 0;
+    let payTxt = '';
+    if (d.userAmount) payTxt = 'Ввести сумму';
+    else payTxt = d.p ? `${fmt(d.p)} / ${d.d}-го` : (d.note || '—');
+    
+    const months = (d.p && !d.userAmount) ? Math.ceil(left / d.p) : null;
+    const dueTxt = (d.d && !d.userAmount) ? ` · <span style="color:var(--amber)">ближайший ${d.d}-го</span>` : '';
+    const isPaidAll = left <= 1;
+    
+    return `<div class="debt-item ${isPaidAll ? 'paid-all' : ''}">
+      <div class="h"><span>${d.n}</span><span style="color:${left > 0 ? 'var(--red)' : 'var(--green)'}">${fmt0(left)} осталось</span></div>
+      <div class="s">Платёж: <span style="color:var(--accent)">${payTxt}</span> ${months ? `· ≈ ${months} мес.` : ''} ${dueTxt}</div>
+      <div class="b"><i style="width:${pct}%"></i></div>
+    </div>`;
+  }).join('');
+  const extra = `<div class="kpi" style="margin-top:12px">
+    <div class="l">Всего осталось внести</div><div class="v" style="color:var(--red)">${fmt0(totalLeft)}</div>
+    <div class="l" style="margin-top:6px">Регулярно в месяц: ${fmt(monthly)}</div></div>`;
+  document.getElementById('debts').innerHTML = (html || '<div class="empty">Нет долгов</div>') + extra;
+  window.__totalLeft = totalLeft; window.__monthly = monthly;
+}
+
+function renderCalendar() {
+  const y = new Date().getFullYear(), m = new Date().getMonth();
+  const monthEnd = new Date(y, m + 1, 0).getDate();
+  const payments = db.debts.filter(d => d.d && d.r - (d.paid || 0) > 0 && !d.userAmount)
+    .sort((a, b) => a.d - b.d).map(d => `${d.d}. → ${d.n}`).join('<br>');
+  const perHtml = db.periods.map(p => {
+    const isCur = p.key === `${y}-${String(m + 1).padStart(2, '0')}`;
+    const end = new Date(p.key.split('-')[0], parseInt(p.key.split('-')[1]), 0).getDate();
+    return `<div><b>${p.label}</b><div>${p.closed ? '🔒 Закрыт' : '📅 Открыт'}${isCur ? ' · сейчас' : ''}</div></div>`;
+  }).join('');
+  document.getElementById('calendar').innerHTML =
+    `<div style="grid-column:1/-1;background:var(--accent);border-color:var(--accent)"><b>📌 Ближайшие платежи</b><div style="color:#fff">${payments || 'нет регулярных платежей'}</div></div>` + perHtml;
+}
+
+function renderPlanner() {
+  const currentKey = db.periods[db.periods.length - 1].key;
+  const currentItems = db.items.filter(i => i.period === currentKey);
+  
+  const incomeTotal = currentItems.filter(i => i.type === 'income').reduce((s, i) => s + i.amount, 0);
+  const expenseTotal = currentItems.filter(i => i.type === 'expense').reduce((s, i) => s + i.amount, 0);
+  const paymentTotal = currentItems.filter(i => i.type === 'payment').reduce((s, i) => s + i.amount, 0);
+  
+  const totalIncome = incomeTotal;
+  const totalExpenses = expenseTotal + paymentTotal;
+  const balance = totalIncome - totalExpenses;
+  
+  let html = `
+    <div class="row"><span>🟢 Доходы</span><span class="pos">${fmt(incomeTotal)}</span></div>
+    <div class="row"><span>🔴 Обязательные расходы</span><span class="neg">${fmt(expenseTotal)}</span></div>
+    <div class="row"><span>🔴 Кредиты</span><span class="neg">${fmt(paymentTotal)}</span></div>
+    <div class="row total"><span>Остаток</span><span class="${balance >= 0 ? 'pos' : 'neg'}">${fmt(balance)}</span></div>
+  `;
+  
+  const detailItems = currentItems.filter(i => i.type === 'expense');
+  if (detailItems.length > 0) {
+    html += `<details style="margin-top:10px;font-size:12px;color:var(--muted)"><summary>Расходы:</summary>
+      ${detailItems.map(i => `<div style="margin:4px 0">${i.desc}: ${fmt(i.amount)}</div>`).join('')}
+    </details>`;
+  }
+  
+  document.getElementById('planner').innerHTML = html;
+}
+
+function renderChart() {
+  // Убрано, как просили
+}
+
+document.getElementById('form').onsubmit = e => {
+  e.preventDefault();
+  const pKey = period.value;
+  const p = db.periods.find(x => x.key === pKey);
+  if (p.closed) { note.textContent = '⚠ Период закрыт — добавляйте записи в открытый период.'; return; }
+  note.textContent = '';
+  
+  let creditVal = cat.value;
+  if (creditVal === 'WB_User') creditVal = 'WB';
+  
+  db.items.push({
+    id: Date.now() + Math.random(),
+    period: pKey,
+    desc: desc.value.trim(),
+    creditType: creditVal,
+    type: type.value,
+    amount: +amount.value,
+    done: false
+  });
+  
+  if (type.value === 'payment' && creditVal === 'WB') {
+    const wb = db.debts.find(d => d.n === 'WB');
+    if (wb) wb.paid = (wb.paid || 0) + amount.value;
+  }
+  
+  save(); form.reset(); render();
+};
+
+function toggleDone(id) {
+  const it = db.items.find(i => i.id == id);
+  const p = db.periods.find(x => x.key === it.period);
+  if (!p.closed) { 
+    it.done = !it.done; 
+    if (it.done) {
+      // Если отметили как оплаченное, увеличиваем сумму погашенного долга в сводке
+      if (it.creditType && it.creditType !== 'WB_User') {
+        const debt = db.debts.find(d => d.n === it.creditType);
+        if (debt) debt.paid = (debt.paid || 0) + it.amount;
+      }
+    } else {
+      // Если сняли галочку, уменьшаем
+      if (it.creditType && it.creditType !== 'WB_User') {
+        const debt = db.debts.find(d => d.n === it.creditType);
+        if (debt) debt.paid = Math.max(0, (debt.paid || 0) - it.amount);
+      }
+    }
+    save(); render(); 
+  }
+}
+function del(id) {
+  const it = db.items.find(i => i.id == id);
+  const p = db.periods.find(x => x.key === it.period);
+  if (!p.closed && confirm('Удалить запись?')) { 
+    // При удалении нужно восстановить баланс погашенного
+    if (it.done && it.creditType && it.creditType !== 'WB_User') {
+      const debt = db.debts.find(d => d.n === it.creditType);
+      if (debt) debt.paid = Math.max(0, (debt.paid || 0) - it.amount);
+    }
+    db.items = db.items.filter(i => i.id != id);
+    save(); render();
+  }
+}
+function closePeriod(key) {
+  const p = db.periods.find(x => x.key === key);
+  const unclosed = db.items.filter(i => i.period === key && !i.done).length;
+  if (unclosed && !confirm(`Есть незакрытые задачи (${unclosed}). Всё равно закрыть?`)) return;
+  p.closed = true; save(); render();
+}
+function openPeriod(key) {
+  if (confirm('Снять блокировку?')) {
+    db.periods.find(x => x.key === key).closed = false; save(); render();
+  }
+}
+
+let filter = 'all';
+function render() {
+  renderSelectors();
+  const items = db.items.filter(i => filter === 'all' || i.period === filter);
+
+  document.getElementById('list').innerHTML = items.length ? `
+    ${items.map(i => {
+      const p = db.periods.find(x => x.key === i.period);
+      const sign = i.type === 'income' ? '+' : '−';
+      const color = i.type === 'income' ? 'var(--green)' : (i.type === 'payment' ? 'var(--accent)' : 'var(--red)');
+      const cat = i.creditType || '—';
+      return `<div class="op ${p.closed ? 'locked' : ''}">
+        <input type="checkbox" class="check" ${i.done ? 'checked' : ''} ${p.closed ? 'disabled' : ''} onchange="toggleDone(${i.id})">
+        <div class="info">
+          <div class="d ${i.done ? 'done' : ''}">${i.desc} <span style="color:var(--muted);font-size:12px">${cat}</span></div>
+          <div class="m">${p.label} ${p.closed ? '<span class="tag t-lock">закрыт</span>' : '<span class="tag t-open">открыт</span>'}</div>
+        </div>
+        <div class="a" style="color:${color}">${sign}${fmt(i.amount)}</div>
+      </div>`;
+    }).join('')}
+    ${!db.periods.find(p => p.key === filter && p.closed) && filter !== 'all' ? `<button class="ghost" style="margin-top:12px" onclick="closePeriod('${filter}')">🔒 Закрыть период «${db.periods.find(p => p.key === filter).label}»</button>` : ''}
+  ` : '<div class="empty">Нет записей</div>';
+
+  const set = filter === 'all' ? db.items : db.items.filter(i => i.period === filter);
+  const inc = set.filter(i => i.type === 'income').reduce((s, i) => s + i.amount, 0);
+  const exp = set.filter(i => i.type === 'expense').reduce((s, i) => s + i.amount, 0);
+  const pay = set.filter(i => i.type === 'payment').reduce((s, i) => s + i.amount, 0);
+  const bal = inc - exp - pay;
+  
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><div class="l">Доходы</div><div class="v" style="color:var(--green)">${fmt(inc)}</div></div>
+    <div class="kpi"><div class="l">Расходы</div><div class="v" style="color:var(--red)">${fmt(exp+pay)}</div></div>
+    <div class="kpi"><div class="l">Остаток</div><div class="v" style="color:${bal>=0?'var(--green)':'var(--red)'}">${fmt(bal)}</div></div>
+    <div class="kpi"><div class="l">Всего долгов</div><div class="v">${fmt(window.__totalLeft||0)}</div></div>`;
+  
+  renderDebts();
+  renderCalendar();
+  renderPlanner();
+}
+render();
+</script>
+</body>
+</html>
